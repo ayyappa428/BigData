@@ -1,0 +1,276 @@
+https://redis.io/download
+Redis is an In-memory Data store
+I want to install this software 
+wget http://download.redis.io/releases/redis-5.0.3.tar.gz
+we will get an issue that wget not found
+If we want to run redis...using docker 
+docker run -it redis
+After installing docker:
+------------------------
+we have to check the following commands:
+docker version
+docker run hello-world
+At the terminal we have executed the command docker run hello-world.That starts up the Docker client or Docker CLI.
+Docker CLI will take the commands from you and communicate to the Docker server.
+The Docker server will look into the Image cache.If Image cache is empty it will go to dockerhub.The DockerHub is a free public 
+repository that you can dowload images and you can run those images.Dockerserver will download the hello-world file and stored into your personal computer
+If we run again hello-world program from docker it will not show unable to download image...
+Before explaining the container you should have the little background about os
+For most of the operating systems there will be something called kernel.
+kernel is an intermediate layer acts between process running on your computer and to an hardware.
+Two programs running on a computer one is chrome and other is nodejs
+chrome in order to work properly has to have python2 and for nodejs has to have python3.In our harddisk we are having an access
+to python2.
+we can solve this by namespacing..we can make a segments of harddisk for python2 and python3
+container is a grouping of resources assigned to it.
+How the singlefile(image) will create a container?
+An Image is having a snapshot...The snapshot containes the directories and files..
+An Image contains chrome and python and also contains specific startup of a command.
+Kernel will isolate the harddrive...in container
+The file snapshot of the image was taken inside the hard drive..of a container
+chrome is a startup command that is isolated from the resources..and placed at running process.
+
+How hello-world world program runs inside the container
+we have taken a snapshot from the image and placed in the container... we executed the command hello-world in process
+
+commands:
+--------
+1) override command
+-------------------
+docker run busybox echo hi there
+hi there it is an extra over ride command..
+hi there will be printed out..
+docker run busybox echo bye there
+docker run busybox echo how are you
+docker run busybox ls
+echo and ls that exists inside the busybox image.Those are the programs that exist inside the filesystem.
+If we run hello-world with ls and echo commands it will give error..
+Listing all running containers:
+-------------------------------
+docker ps -- It will show the running containers...
+docker run busybox ping google.com
+open another terminal and check now with docker ps-- It will show the status..
+
+docker ps --all
+It will show all the containers..
+
+Container lifecycle:
+--------------------
+docker run = docker create + docker start
+docker run is identical of running two other commands.
+docker create - creating a container
+docker start - starting a container
+docker create hello-world -- you will long characters of the string(ID of the container)
+docker run -a paste the ID
+Then the welcome message appears..
+-a -- watch output from the container and print it to the terminal.
+Restarting stopped containers:
+------------------------------
+docker ps --all
+
+docker run busybox hi there
+and type docker ps --all
+and status will be exited..
+we can start the container id:
+docker start containerid
+docker start -a containerid - we will get the output
+To delete all stopped containers:
+docker system prune
+Retrieving Log Outputs:
+-----------------------
+docker create busybox echo hi there
+docker start containerid
+docker logs containerid
+you will get the messages...
+stopping containers:
+--------------------
+docker create busybox ping google.com
+docker start containerid
+docker logs containerid
+docker ps
+It shows the command google.com
+stop command issues a SIGTERM command to a running process
+kill command issues a SIGKILL command to a running process
+
+Normal command prompt:
+----------------------
+redis-server
+open another terminal
+redis-cli
+set mynumber 5
+get mynumber
+
+Now in Docker:
+--------------
+docker run redis
+ open another terminal
+redis-cli
+you will get error messages as could not connect to redis at 127.0.0.1:6379: Connection refused.
+Not connected
+because redis-cli you are giving outside the container...
+
+Executing commands in running containers:
+-----------------------------------------
+docker exec -it <containerid> redis-cli
+
+set myvalue 5
+get myvalue
+
+-it -- To enter the text.
+
+Getting a command prompt inside the container:
+-----------------------------------------------
+docker exec -it <containerid> sh
+you will see a pound symbol
+cd ~/
+ls
+cd /
+echo hi there
+export b=5
+echo $b
+
+Running:
+--------
+docker run -it <containerid> sh
+
+Isolation of a container:
+-------------------------
+1st terminal:
+------------
+docker run -it busybox sh
+2nd terminal:
+-------------
+docker run -it busybox sh
+3rd terminal:
+-------------
+docker ps
+
+now go to 1st terminal:
+-----------------------
+touch hithere
+ls
+Now go to second container and type ls you will not see..
+
+PART3:
+-----
+Building a custom image:
+-----------------------
+A Docker file is a plain text file..I have written a couple of lines of configuration placed inside it.
+This configuration is going to define how our container behaves.
+The Docker client will give the Dockerfile to the Docker server.Dockerserver is going to create a new image..and then starts a container.
+mkdir redis-image
+cd redis-image
+create Dockerfile inside that directory
+
+Building a redis-image:
+----------------------
+#Use an existing docker image as a Base
+FROM alpine
+
+#Download and install a dependency
+RUN apk add --update redis
+
+#Tell the image what to do when it starts as a container.
+CMD ["redis-server"]
+
+Running:
+--------
+docker build .
+It will create a container id
+docker run containerid
+
+Explanation:
+-----------
+FROM alpine
+we want to use the base image as alpine
+It is an initial operating system point...to build an image
+apk is the package manager that is build in the alpine image.
+while we update the image ..Inside the image we will have the copy of redis and we will remove an intermediate container.
+
+Rebuilds with cache:
+--------------------
+#Use an existing docker image as a Base
+FROM alpine
+
+#Download and install a dependency
+RUN apk add --update redis
+RUN apk add --update gcc
+
+#Tell the image what to do when it starts as a container.
+CMD ["redis-server"]
+
+we can use the same image..which is cached in the localmachine
+
+Tagging:
+-------
+Instead of giving the container id we can give the tag name for an image..
+Eg:
+---
+docker run busybox
+docker run redis
+
+docker build -t stephen/redis:latest .
+docker run stephen/redis
+
+---------------------------------------------------------------------------------------
+PART4:
+-----
+NODEJS WEBAPP:
+-------------
+mkdir simpleweb
+cd simpleweb
+code . --- It will open in the visual editor
+create a new file package.json 
+npm is not finding the file..
+docker build -t stephengrider/simpleweb .
+
+Browser is making a request to 5000 and rediret request to 8080 inside the container.
+
+docker run -p 5000:8080 stephengrider/simpleweb 
+
+open the browser type localhost:5000 --- then output will displayed.
+
+docker exec -it <containerid> sh
+/usr/app #
+
+part5:
+-----
+In the terminal: docker-compose
+lot of commands will be displayed
+docker-compose.yml
+------------------
+version: '3'
+services:
+  redis-server:
+    image: 'redis'
+  node-app:
+    build: .
+	ports:
+	  - "4001:8081"
+stopping:
+--------
+docker-compose up -d
+
+docker ps
+
+docker-compose down
+
+If he made any changes:
+-----------------------
+docker-compose up --build
+It will rebuild the container
+After when we browse in browser
+container exited message will be shown in console
+docker ps
+you can see only one running container
+
+we have to add restart policy for container
+version: '3'
+services:
+  redis-server:
+    image: 'redis'
+  node-app:
+    restart:always
+    build: .
+	ports:
+	  - "4001:8081"
